@@ -16,6 +16,7 @@ $tweaks = @(
 	"InstallPrattProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
 	"Install7Zip",
 	"InstallNotepadplusplus",
+	"InstallVLC"
 
 	### Windows Apps
 	"DebloatAll",
@@ -185,6 +186,11 @@ Function Install7Zip {
 Function InstallNotepadplusplus {
 	Write-Output "Installing Notepad++"
 	choco install notepadplusplus -y
+}
+
+Function InstallVLC {
+	Write-Output "Installing VLC Media Player"
+	choco install vlc -y
 }
 
 ##########
