@@ -3,11 +3,192 @@
 # Author: Disassembler <disassembler@dasm.cz>
 # Modified by: PratyakshM <hello.pratyakshmehrotra@gmail.com>
 # Version: v3.11, 2020-07-29
+# Modified source: https://github.com/PratyakshM/Win10-InitialSetupScript/
 # Original source: https://github.com/Disassembler0/Win10-Initial-Setup-Script
 ##########
 
+# Default preset
+$tweaks = @(
+	### Require administrator privileges ###
+	"RequireAdmin",
+
+	### External Program Setup
+	"InstallPrattProgs", #REQUIRED FOR OTHER PROGRAM INSTALLS!
+	"Install7Zip",
+	"InstallNotepadplusplus",
+
+	### Windows Apps
+	"DebloatAll",
+
+	### Privacy Tweaks ###
+	"DisableTelemetry",             # "EnableTelemetry",
+	"DisableWiFiSense",             # "EnableWiFiSense",
+	"DisableSmartScreen",         # "EnableSmartScreen",
+	"DisableWebSearch",             # "EnableWebSearch",
+	"DisableAppSuggestions",        # "EnableAppSuggestions",
+	"DisableActivityHistory",       # "EnableActivityHistory",
+	"DisableBackgroundApps",        # "EnableBackgroundApps",
+	"DisableLocationTracking",      # "EnableLocationTracking",
+	"DisableMapUpdates",            # "EnableMapUpdates",
+	"DisableFeedback",              # "EnableFeedback",
+	"DisableTailoredExperiences",   # "EnableTailoredExperiences",
+	"DisableAdvertisingID",         # "EnableAdvertisingID",
+	"DisableCortana",               # "EnableCortana",
+	"DisableErrorReporting",        # "EnableErrorReporting",
+	"SetP2PUpdateLocal",          # "SetP2PUpdateInternet",
+	"DisableDiagTrack",             # "EnableDiagTrack",
+	"DisableWAPPush",               # "EnableWAPPush",
+
+	### Security Tweaks ###
+	"SetUACLow",                  # "SetUACHigh",
+	# "EnableSharingMappedDrives",  # "DisableSharingMappedDrives",
+	# "DisableAdminShares",           # "EnableAdminShares",
+	"DisableSMB1",                # "EnableSMB1",
+	# "DisableSMBServer",           # "EnableSMBServer",
+	# "DisableLLMNR",               # "EnableLLMNR",
+	"SetCurrentNetworkPrivate",     # "SetCurrentNetworkPublic",
+	"SetUnknownNetworksPrivate",  # "SetUnknownNetworksPublic",
+	"DisableNetDevicesAutoInst",  # "EnableNetDevicesAutoInst",
+	"DisableCtrldFolderAccess",	# "EnableCtrldFolderAccess",
+	# "DisableFirewall",            # "EnableFirewall",
+	"DisableDefender",            # "EnableDefender",
+	"DisableDefenderCloud",       # "EnableDefenderCloud",
+	"EnableF8BootMenu",             # "DisableF8BootMenu",
+	#"SetDEPOptOut",                 # "SetDEPOptIn",
+	# "EnableCIMemoryIntegrity",    # "DisableCIMemoryIntegrity",
+	#"DisableScriptHost",            # "EnableScriptHost",
+	#"EnableDotNetStrongCrypto",     # "DisableDotNetStrongCrypto",
+	"DisableMeltdownCompatFlag", # "EnableMeltdownCompatFlag"    
+
+	### Service Tweaks ###
+	"DisableUpdateMSRT",          # "EnableUpdateMSRT",
+	"DisableUpdateDriver",        # "EnableUpdateDriver",
+	"DisableUpdateRestart",         # "EnableUpdateRestart",
+	"DisableHomeGroups",          # "EnableHomeGroups",
+	"DisableSharedExperiences",     # "EnableSharedExperiences",
+	"DisableRemoteAssistance",      # "EnableRemoteAssistance",
+	"EnableRemoteDesktop",          # "DisableRemoteDesktop",
+	"DisableAutoplay",              # "EnableAutoplay",
+	"DisableAutorun",               # "EnableAutorun",
+	"DisableStorageSense",        # "EnableStorageSense",
+	"DisableDefragmentation",     # "EnableDefragmentation",
+	"DisableSuperfetch",          # "EnableSuperfetch",
+	"DisableIndexing",            # "EnableIndexing",
+	"SetBIOSTimeUTC",             # "SetBIOSTimeLocal",
+	"DisableHibernation",		# "EnableHibernation",          # 
+	"EnableSleepButton",		# "DisableSleepButton",         
+	"DisableSleepTimeout",        # "EnableSleepTimeout",
+	# "DisableFastStartup",         # "EnableFastStartup",
+
+	### UI Tweaks ###
+	"DisableActionCenter",          # "EnableActionCenter",
+	"DisableLockScreen",            # "EnableLockScreen",
+	"DisableLockScreenRS1",       # "EnableLockScreenRS1",
+	# "HideNetworkFromLockScreen",    # "ShowNetworkOnLockScreen",
+	# "HideShutdownFromLockScreen",   # "ShowShutdownOnLockScreen",
+	"DisableStickyKeys",            # "EnableStickyKeys",
+	"ShowTaskManagerDetails"        # "HideTaskManagerDetails",
+	"ShowFileOperationsDetails",    # "HideFileOperationsDetails",
+	"DisableFileDeleteConfirm",	# "EnableFileDeleteConfirm",    
+	#"HideTaskbarSearch",
+	"ShowTaskbarSearchIcon",      # "ShowTaskbarSearchBox",
+	"HideTaskView",                 # "ShowTaskView",
+	# "ShowSmallTaskbarIcons",        # "ShowLargeTaskbarIcons",
+	# "SetTaskbarCombineWhenFull",    # "SetTaskbarCombineNever",     # "SetTaskbarCombineAlways",
+	# "HideTaskbarPeopleIcon",        # "ShowTaskbarPeopleIcon",
+	"ShowTrayIcons",                # "HideTrayIcons",
+	"DisableSearchAppInStore",      # "EnableSearchAppInStore",
+	"DisableNewAppPrompt",          # "EnableNewAppPrompt",
+	# "SetControlPanelSmallIcons",  # "SetControlPanelLargeIcons",  # "SetControlPanelCategories",
+	# "SetVisualFXPerformance",     # "SetVisualFXAppearance",
+	# "AddENKeyboard",              # "RemoveENKeyboard",
+	"EnableNumlock",             	# "DisableNumlock",
+	"EnableDarkMode",				# "DisableDarkMode",
+	"Stop-EdgePDF",
+
+	### Explorer UI Tweaks ###
+	"ShowKnownExtensions",          # "HideKnownExtensions",
+	# "ShowHiddenFiles",              # "HideHiddenFiles",
+	"HideSyncNotifications"         # "ShowSyncNotifications",
+	# "HideRecentShortcuts",          # "ShowRecentShortcuts",
+	"SetExplorerThisPC",            # "SetExplorerQuickAccess",
+	"HideThisPCFromDesktop",	# "ShowThisPCOnDesktop",
+	# "ShowUserFolderOnDesktop",    # "HideUserFolderFromDesktop",
+	# "HideDesktopFromThisPC",        # "ShowDesktopInThisPC",
+	# "HideDesktopFromExplorer",    # "ShowDesktopInExplorer",
+	# "HideDocumentsFromThisPC",      # "ShowDocumentsInThisPC",
+	# "HideDocumentsFromExplorer",  # "ShowDocumentsInExplorer",
+	# "HideDownloadsFromThisPC",      # "ShowDownloadsInThisPC",
+	# "HideDownloadsFromExplorer",  # "ShowDownloadsInExplorer",
+	"HideMusicFromThisPC",          # "ShowMusicInThisPC",
+	"HideMusicFromExplorer",      # "ShowMusicInExplorer",
+	# "HidePicturesFromThisPC",       # "ShowPicturesInThisPC",
+	# "HidePicturesFromExplorer",   # "ShowPicturesInExplorer",
+	"HideVideosFromThisPC",         # "ShowVideosInThisPC",
+	"HideVideosFromExplorer",     # "ShowVideosInExplorer",
+	"Hide3DObjectsFromThisPC",      # "Show3DObjectsInThisPC",
+	"Hide3DObjectsFromExplorer",  # "Show3DObjectsInExplorer",
+	# "DisableThumbnails",          # "EnableThumbnails",
+	# "DisableThumbsDB",              # "EnableThumbsDB",
+
+	### Application Tweaks ###
+	"DisableOneDrive",              # "EnableOneDrive",
+	"UninstallOneDrive",            # "InstallOneDrive",
+	"UninstallMsftBloat",           # "InstallMsftBloat",
+	"UninstallThirdPartyBloat",     # "InstallThirdPartyBloat",
+	# "UninstallWindowsStore",      # "InstallWindowsStore",
+	# "DisableXboxFeatures",          # "EnableXboxFeatures",
+	"DisableAdobeFlash",            # "EnableAdobeFlash",
+	"InstallMediaPlayer", 		# "UninstallMediaPlayer",
+	"UninstallInternetExplorer",  # "InstallInternetExplorer",
+	"UninstallWorkFolders",       # "InstallWorkFolders",
+	"InstallLinuxSubsystem",      # "UninstallLinuxSubsystem",
+	# "InstallHyperV",              # "UninstallHyperV",
+	"SetPhotoViewerAssociation",    # "UnsetPhotoViewerAssociation",
+	"AddPhotoViewerOpenWith",       # "RemovePhotoViewerOpenWith",
+	"InstallPDFPrinter",		# "UninstallPDFPrinter",
+	# "UninstallXPSPrinter",          # "InstallXPSPrinter",
+	# "RemoveFaxPrinter",             # "AddFaxPrinter",
+
+	### Server Specific Tweaks ###
+	# "HideServerManagerOnLogin",   # "ShowServerManagerOnLogin",
+	# "DisableShutdownTracker",     # "EnableShutdownTracker",
+	# "DisablePasswordPolicy",      # "EnablePasswordPolicy",
+	# "DisableCtrlAltDelLogin",     # "EnableCtrlAltDelLogin",
+	# "DisableIEEnhancedSecurity",  # "EnableIEEnhancedSecurity",
+	# "EnableAudio",                # "DisableAudio",
+
+	### Unpinning ###
+	"UnpinStartMenuTiles",
+	#"UnpinTaskbarIcons",
+
+	### Auxiliary Functions ###
+	"WaitForKey"
+	"Restart"
+)
+
+#########
+# Recommended programs by PratyakshM
+#########
+
+Function InstallPrattProgs {
+	Write-Output "Installing Chocolatey"
+	Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+	choco install chocolatey-core.extension -y
+}
+
+Function Install7Zip {
+	Write-Output "Installing 7-Zip"
+	choco install 7zip -y
+}
+
+Function InstallNotepadplusplus {
+	Write-Output "Installing Notepad++"
+	choco install notepadplusplus -y
+}
+
 ##########
-#region Privacy Tweaks
+# Privacy Tweaks
 ##########
 
 # Disable Telemetry
