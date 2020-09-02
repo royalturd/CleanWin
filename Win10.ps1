@@ -1861,11 +1861,13 @@ Function UninstallOneDrive {
 	Write-Output "Uninstalling Microsoft OneDrive"
 	taskkill /f /im OneDrive.exe
 	%SystemRoot%\SysWOW64\OneDriveSetup.exe /uninstall
+}
 
 # Install OneDrive
 Function InstallOneDrive {
 	Write-Output "Installing Microsoft OneDrive"
 	%systemroot%\SysWOW64\OneDriveSetup.exe
+}
 
 # Uninstall default Microsoft applications
 Function UninstallMsftBloat {
