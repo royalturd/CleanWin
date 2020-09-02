@@ -144,7 +144,6 @@ $tweaks = @(
 	# "DisableThumbsDB",              # "EnableThumbsDB",
 
 	### Application Tweaks ###
-	"DisableOneDrive",              # "EnableOneDrive",
 	"UninstallOneDrive",            # "InstallOneDrive",
 	"UninstallMsftBloat",           # "InstallMsftBloat",
 	"UninstallThirdPartyBloat",     # "InstallThirdPartyBloat",
@@ -1857,20 +1856,16 @@ Function EnableThumbsDB {
 # Application Tweaks
 ##########
 
-# Disable OneDrive
-Function DisableOneDrive {
-	Write-Output "Disabling OneDrive..."
-	If (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {
-		New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" | Out-Null
-	}
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Type DWord -Value 1
-}
+# Uninstall OneDrive
+Function UninstallOneDrive {
+	Write-Output "Uninstalling Microsoft OneDrive"
+	taskkill /f /im OneDrive.exe
+	%SystemRoot%\SysWOW64\OneDriveSetup.exe /uninstall
 
-# Enable OneDrive
-Function EnableOneDrive {
-	Write-Output "Enabling OneDrive..."
-	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -ErrorAction SilentlyContinue
-}
+# Install OneDrive
+Function InstallOneDrive {
+	Write-Output "Installing Microsoft OneDrive"
+	%systemroot%\SysWOW64\OneDriveSetup.exe
 
 # Uninstall default Microsoft applications
 Function UninstallMsftBloat {
