@@ -1868,6 +1868,7 @@ Function InstallOneDrive {
 # Uninstall default Microsoft applications
 Function UninstallMsftBloat {
 	Write-Output "Uninstalling default Microsoft applications..."
+	Get-AppxPackage "Microsoft.549981C3F5F10" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.3DBuilder" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.AppConnector" | Remove-AppxPackage
 	Get-AppxPackage "Microsoft.BingFinance" | Remove-AppxPackage
@@ -1913,6 +1914,7 @@ Function UninstallMsftBloat {
 # Install default Microsoft applications
 Function InstallMsftBloat {
 	Write-Output "Installing default Microsoft applications..."
+	Get-AppxPackage -AllUsers "Microsoft.549981C3F5F10" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.3DBuilder" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.AppConnector" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.BingFinance" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
@@ -1954,7 +1956,6 @@ Function InstallMsftBloat {
 	Get-AppxPackage -AllUsers "Microsoft.ZuneMusic" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Microsoft.ZuneVideo" | ForEach {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 }
-
 # In case you have removed them for good, you can try to restore the files using installation medium as follows
 # New-Item C:\Mnt -Type Directory | Out-Null
 # dism /Mount-Image /ImageFile:D:\sources\install.wim /index:1 /ReadOnly /MountDir:C:\Mnt
@@ -2448,12 +2449,13 @@ Function DebloatAll {
     $Bloatware = @(
 
         #Unnecessary Windows 10 AppX Apps
-        "Microsoft.BingNews"
+	"Microsoft.549981C3F5F10"
+	"Microsoft.BingNews"
         "Microsoft.GetHelp"
         "Microsoft.Getstarted"
         "Microsoft.Messaging"
         "Microsoft.Microsoft3DViewer"
-		"Microsoft.MixedReality.Portal"	
+	"Microsoft.MixedReality.Portal"	
         "Microsoft.MicrosoftSolitaireCollection"
         "Microsoft.NetworkSpeedTest"
         "Microsoft.News"
@@ -2470,6 +2472,7 @@ Function DebloatAll {
         "Microsoft.WindowsFeedbackHub"
         "Microsoft.WindowsMaps"
         "Microsoft.WindowsSoundRecorder"
+	"Microsoft.YourPhone"
         "Microsoft.ZuneMusic"
         "Microsoft.ZuneVideo"
 
