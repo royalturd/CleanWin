@@ -1,7 +1,7 @@
 # Instructions
 
 ## How to run:
-1. Download **CleanWin-v0.6.zip** from the latest [release tag](https://github.com/PratyakshM/CleanWin/releases/tag/0.6).
+1. Download **CleanWin-v0.7.zip** from the latest [release tag](https://github.com/PratyakshM/CleanWin/releases/tag/0.7).
 2. Extract the contents of the ZIP file into your C: drive and launch **Start.bat**.    
 
 ## List of tasks:

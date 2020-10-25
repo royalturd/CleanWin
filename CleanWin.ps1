@@ -88,7 +88,6 @@ $tweaks = @(
 	"RemoveYourPhone",
 	"QCLS",
 	"ConfirmInstall",
-	"QCLS",
 	"InstallWinget",
 	"QCLS",
 	"Install7zip",
@@ -144,7 +143,7 @@ $tweaks = @(
 # CleanWin
 Function CleanWin {
 	Write-Output " "
-	Write-Output "CleanWin version 0.6.1 by pratyakshm"
+	Write-Output "CleanWin version 0.7 by pratyakshm"
 	Write-Output "https://github.com/pratyakshm/CleanWin"
 	Write-Output "All rights reserved."
 }
