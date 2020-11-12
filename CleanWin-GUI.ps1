@@ -925,8 +925,8 @@ $EnableDataCollection.Add_Click( {
 $OOShutup10.Add_Click( {
         $ErrorActionPreference = 'SilentlyContinue'
 	    Import-Module BitsTransfer
-	    Start-BitsTransfer -Source "https://dl.pratyakshm.cf/0:down/CDN/ooshutup10.cfg" -Destination ooshutup10.cfg
-	    Start-BitsTransfer -Source "https://dl.pratyakshm.cf/0:down/CDN/OOSU10.exe" -Destination OOSU10.exe
+	    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/ooshutup10.cfg" -Destination ooshutup10.cfg
+	    Start-BitsTransfer -Source "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -Destination OOSU10.exe
 	    ./OOSU10.exe ooshutup10.cfg /quiet
         Remove-Item ooshutup10.cfg
         Remove-Item  OOSU10.exe
@@ -936,7 +936,7 @@ $OOShutup10.Add_Click( {
 $HostsTelemetry.Add_Click( {
         $ErrorActionPreference = 'SilentlyContinue'
         Import-Module BitsTransfer
-        Start-BitsTransfer -Source "https://dl.pratyakshm.cf/0:down/CDN/hosts-telemetry.bat" -Destination hoststelemetry.bat
+        Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/hosts-telemetry.bat" -Destination hoststelemetry.bat
         ./hoststelemetry.bat /quiet
         Remove-Item hoststelemetry.bat
         Write-Host "Telemetry IP addresses have been blocked using the hosts file."

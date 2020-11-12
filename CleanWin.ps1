@@ -188,14 +188,20 @@ Function TelemetryHosts {
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
 	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
 	if ($decision -eq 0) {
-		./hosts-telemetry.bat
+	Import-Module BitsTransfer
+    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/hosts-telemetry.bat" -Destination hoststelemetry.bat
+    ./hoststelemetry.bat /quiet
+    Remove-Item hoststelemetry.bat
+    Write-Host "Telemetry IP addresses have been blocked using the hosts file."
 	}
 }
 
 # Paste vanilla hosts file to revert telemetry IP blocks
 Function UndoHosts {
-	ren sample-hosts hosts 
-	move hosts C:\Windows\System32\drivers\etc
+	Import-Module BitsTransfer
+    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/sample-hosts" -Destination sample-hosts
+	Rename-Item sample-hosts hosts 
+	Move-Item hosts C:\Windows\System32\drivers\etc
 }
 
 # Disable telemetry
