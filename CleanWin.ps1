@@ -189,7 +189,7 @@ Function TelemetryHosts {
 	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
 	if ($decision -eq 0) {
 	Import-Module BitsTransfer
-    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/hosts-telemetry.bat" -Destination hoststelemetry.bat
+    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/dev/files/hosts-telemetry.bat" -Destination hoststelemetry.bat
     ./hoststelemetry.bat /quiet
     Remove-Item hoststelemetry.bat
     Write-Host "Telemetry IP addresses have been blocked using the hosts file."
@@ -199,7 +199,7 @@ Function TelemetryHosts {
 # Paste vanilla hosts file to revert telemetry IP blocks
 Function UndoHosts {
 	Import-Module BitsTransfer
-    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/sample-hosts" -Destination sample-hosts
+    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/dev/files/sample-hosts" -Destination sample-hosts
 	Rename-Item sample-hosts hosts 
 	Move-Item hosts C:\Windows\System32\drivers\etc
 }
