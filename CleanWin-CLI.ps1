@@ -1,6 +1,10 @@
-# This file is a part of the CleanWin software
-# Copyright (c) 2021 PratyakshM <pratyakshm@protonmail.com>
-# All rights reserved.
+##############
+#
+# CleanWin
+# Author: PratyakshM <pratyakshm@protonmail.com>
+#
+##############
+
 
 # Default preset
 $tasks = @(
@@ -11,9 +15,13 @@ $tasks = @(
 	"LessSleep",
 	"ProductInformation",
 	"ClearShell",
+	"SystemRestore",
+	"ClearShell",
 	
 ### Privacy changes ###
 	"PrintPrivacyChanges",
+	"OOShutup10Config",
+	"TelemetryHosts"           # "UndoHosts",
 	"DisableTelemetry", 	   # "EnableDataCollection",
 	"DisableActivityHistory",
 	"DisableAdvertisingID",
@@ -44,7 +52,6 @@ $tasks = @(
 ### Windows Explorer Changes ###
 	"PrintExplorerChanges",
 	"ShowVerboseStatus",           # "HideVerboseStatus",
-	"TransparentLockScreen",	   # "BlurLockScreen",
 	"EnablePrtScrToSnip",		   # "DisablePrtScrSnip",
 	"DisableStickyKeys",           # "EnableStickyKeys",
 	"SetExplorerThisPC",           # "SetExplorerQuickAccess",
@@ -53,7 +60,6 @@ $tasks = @(
 	"HideSearchBar",			   # "RestoreSearchBar"
 	"HideTaskView",                # "RestoreTaskView",
 	"HideCortana",			       # "RestoreCortana",
-	"HideMeetNow",				   # "RestoreMeetNow",
 	"ShowSecondsInTaskbar",        # "HideSecondsFromTaskbar",
 	"LessSleep",
 	"ChangesDone",
@@ -63,6 +69,7 @@ $tasks = @(
 	"PrintFeaturesChanges",
 	"EnableWSL",
 	"UninstallMathRecognizer",		# "InstallMathRecognizer"
+	"UninstallInternetExplorer",	# "InstallInternetExplorer"
 	"UninstallHelloFace",			# "InstallHelloFace"
 	"UninstallWorkFolders",			# "InstallWorkFolders"
 	"InstalldotNET3",				# "UninstalldotNET3",
@@ -74,6 +81,7 @@ $tasks = @(
 	"PrintSecurityChanges",
 	"AutoLoginPostUpdate", 		   # "StayOnLockscreenPostUpdate",
 	"DisableMeltdownCompatFlag",   # "EnableMeltdownCompatFlag",
+	"DisableSMB",				   # "EnableSMB",
 	"LessSleep",
 	"ChangesDone",
 	"ClearShell",
@@ -87,8 +95,8 @@ $tasks = @(
 
 ### App changes ###
 	"PrintAppsChanges",
-	"DebloatApps", "CleanupRegistry",
-	"InstallChoco", "Install7zip", "ChocInstall", 
+	"DebloatApps", "RemoveCamera", "RemoveGrooveMusic", "RemoveSkype", "RemoveYourPhone", "CleanupRegistry",
+	"ConfirmInstall", "InstallWinget", "Install7zip", "Winstall", 
 	"LessSleep",
 	"ChangesDone",
 	"ClearShell",
@@ -96,7 +104,8 @@ $tasks = @(
 	"ClearShell",
 
 ###  Tasks after successful run ###
-	"RestartPC"
+	"PrintEndTasksBegin",
+	"PrintEndEndTasks"
 )
 
 
@@ -104,9 +113,8 @@ $tasks = @(
 
 # CleanWin
 Function CleanWin {
-	Clear-Host
 	Write-Host " "
-	Write-Host "CleanWin v0.3.5 by pratyakshm"
+	Write-Host "CleanWin v0.7.1 by pratyakshm"
 	Write-Host "https://github.com/pratyakshm/CleanWin"
 	Write-Host "CleanWin is licensed under the MIT License: https://github.com/pratyakshm/CleanWin/blob/main/LICENSE"
 	Write-Host "All rights reserved."
@@ -128,6 +136,17 @@ Function ProductInformation {
 	else{
 		"Windows.OSArchitecture         : 64-bit"
 	}
+}
+
+# Create a system restore point
+Function SystemRestore {
+	Write-Host " "
+	Write-Host "Creating a system restore point..."
+	$SystemRestore = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore"
+	Set-ItemProperty -Path $SystemRestore -Name "SystemRestorePointCreationFrequency" -Type DWord -Value 0
+	Checkpoint-Computer -Description "CleanWin" -RestorePointType MODIFY_SETTINGS
+	Set-ItemProperty -Path $SystemRestore -Name "SystemRestorePointCreationFrequency" -Type DWord -Value 1440
+	Write-Host "System restore point has been created."
 }
 
 # Less sleep
@@ -163,6 +182,51 @@ Function PrintPrivacyChanges {
 	Write-Host "     PRIVACY CHANGES     "
 	Write-Host "-------------------------"
 	Write-Host " "
+}
+
+# Apply O&O Shutup10 Recommended Configuration (thanks to Chris Titus for the idea)
+Function OOShutup10Config {
+	Write-Host " "
+	$question = 'Do you want apply O&OShutup10 settings?'
+	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+	if ($decision -eq 0) {
+	Write-Host "Applying O&OShutup10 settings..."
+	Import-Module BitsTransfer
+	Start-BitsTransfer -Source "https://dl.pratyakshm.cf/0:down/CDN/ooshutup10.cfg" -Destination ooshutup10.cfg
+	Start-BitsTransfer -Source "https://dl.pratyakshm.cf/0:down/CDN/OOSU10.exe" -Destination OOSU10.exe
+	./OOSU10.exe ooshutup10.cfg /quiet
+	Remove-Item ooshutup10.cfg
+	Remove-Item OOSU10.exe
+	Write-Host "O&OShutup10 settings were applied."
+	}
+}
+
+# Run the hosts-telemetry.bat file to write telemetry IP addresses into the hosts file to implement block
+Function TelemetryHosts {
+	Write-Host " "
+	$question = 'Do you want to block telemetry IP addresses?'
+	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+	if ($decision -eq 0) {
+	Import-Module BitsTransfer
+    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/hosts-telemetry.bat" -Destination hoststelemetry.bat
+    ./hoststelemetry.bat /quiet
+    Remove-Item hoststelemetry.bat
+    Write-Host "Telemetry IP addresses have been blocked using the hosts file."
+	}
+}
+
+# Paste vanilla hosts file to revert telemetry IP blocks
+Function UndoHosts {
+	Import-Module BitsTransfer
+    Start-BitsTransfer -Source "https://raw.githubusercontent.com/pratyakshm/CleanWin/staging/files/sample-hosts" -Destination sample-hosts
+	Rename-Item sample-hosts hosts 
+	Move-Item hosts C:\Windows\System32\drivers\etc
 }
 
 # Disable telemetry
@@ -211,7 +275,7 @@ Function DisableTelemetry {
 		Stop-Service DiagTrack | Set-Service -StartupType Disabled
 		Stop-Service dmwappushservice | Set-Service -StartupType Disabled
 		
-		Write-Host "Done."
+		Write-Host "Telemetry has been turned off."
 	}
 	
 }
@@ -224,7 +288,7 @@ Function DisableActivityHistory {
 	Set-ItemProperty -Path $ActivityFeed -Name "EnableActivityFeed" -Type DWord -Value 0
 	Set-ItemProperty -Path $ActivityFeed -Name "PublishUserActivities" -Type DWord -Value 0
 	Set-ItemProperty -Path $ActivityFeed -Name "UploadUserActivities" -Type DWord -Value 0	
-	Write-Host "Done."
+	Write-Host "Activity history has been turned off."
 }
 
 # Disable Advertising ID
@@ -236,7 +300,7 @@ Function DisableAdvertisingID {
 		New-Item -Path $AdvertisingID | Out-Null
 	}
 	Set-ItemProperty -Path $AdvertisingID -Name "DisabledByGroupPolicy" -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "Advertising ID has been turned off."
 }
 
 # Disable Feedback
@@ -257,7 +321,7 @@ Function DisableFeedback {
 	Set-ItemProperty -Path $Feedback2 -Name "DoNotShowFeedbackNotifications" -Type DWord -Value 1
 	Disable-ScheduledTask -TaskName $Feedback3 -ErrorAction SilentlyContinue | Out-Null
 	Disable-ScheduledTask -TaskName $Feedback4 -ErrorAction SilentlyContinue | Out-Null
-	Write-Host "Done."
+	Write-Host "Feedback has been turned off."
 }
 
 # Disable Background application access - ie. if apps can download or update when they aren't used - Cortana is excluded as its inclusion breaks start menu search
@@ -268,7 +332,7 @@ Function DisableBackgroundApps {
 		Set-ItemProperty -Path $_.PsPath -Name "Disabled" -Type DWord -Value 1
 		Set-ItemProperty -Path $_.PsPath -Name "DisabledByUser" -Type DWord -Value 1
 		}
-	Write-Host "Done."
+	Write-Host "Background apps have been turned off."
 }
 
 # Disable Location Tracking
@@ -282,7 +346,7 @@ Function DisableLocationTracking {
 		}
 	Set-ItemProperty -Path $Location1 -Name "Value" -Type String -Value "Deny"
 	Set-ItemProperty -Path $Location2 -Name "SensorPermissionState" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Location tracking has been turned off."
 }
 
 # Disable language list access for relevant content
@@ -294,7 +358,7 @@ Function DisableLangRecommendation {
 		New-Item -Path $Language | Out-Null
 	}
 	Set-ItemProperty -Path $Language -Name "HttpAcceptLanguageOptOut " -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "Websites have been restricted from accessing your language list."
 }
 
 # Disable automatic Maps updates
@@ -302,7 +366,7 @@ Function DisableMapUpdates {
 	Write-Host " "
 	Write-Host "Turning off automatic maps updates..."
 	Set-ItemProperty -Path "HKLM:\SYSTEM\Maps" -Name "AutoUpdateEnabled" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Automatic Maps updates have been turned off."
 }
 
 # Disable Speech Recognition
@@ -314,7 +378,7 @@ Function DisableSpeechRecognition {
 		New-Item -Path $Speech | Out-Null
 	}
 	Set-ItemProperty -Path $Speech -Name "HasAccepted" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Online speech recognition has been turned off."
 }
 
 # Disable suggestions and bloatware auto-install
@@ -328,12 +392,13 @@ Function DisableSuggestions {
 	Set-ItemProperty -Path $Suggestions2 -Name "ShowSyncProviderNotifications" -Type DWord -Value 0
 	Set-ItemProperty -Path $Suggestions1 -Name "SoftLandingEnabled" -Type DWord -Value 0
 	Set-ItemProperty -Path $Suggestions1 -Name "SubscribedContent" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Suggestions in start menu and file explorer have been turned off."
 }
 
 
 # Reverts all privacy changes made by CleanWin
 Function Revert-Privacy {
+
 	# Enable advertising ID
 	$Advertising = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo"
 	Remove-ItemProperty -Path $Advertising -Name "DisabledByGroupPolicy" -ErrorAction SilentlyContinue
@@ -416,6 +481,7 @@ Function Revert-Privacy {
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Windows Error Reporting\QueueReporting" | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Feedback\Siuf\DmClient" -ErrorAction SilentlyContinue | Out-Null
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Feedback\Siuf\DmClientOnScenarioDownload" -ErrorAction SilentlyContinue | Out-Null
+	
 }
 
 
@@ -448,7 +514,7 @@ Function DisableAutoUpdates {
 	  		New-Item -Path $Update2 | Out-Null
 	  		}
 		Set-ItemProperty -Path $Update2 -Name NoAutoUpdate -Type DWord -Value 1
-		Write-Host "Done."
+		Write-Host "Automatic Windows updates have been turned off."
 	}
 }
 
@@ -456,7 +522,7 @@ Function DisableAutoUpdates {
 Function EnableAutoUpdates {
 	Write-Host "Turning on automatic Windows updates..."
 	Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "Automatic Windows updates have been turned on."
 }
 
 # Update only from MSFT (no LAN or P2P)
@@ -471,7 +537,7 @@ Function DisableLANP2P {
 		}
 	Set-ItemProperty -Path $LANP2P2 -Name DownloadMode -Type DWord -Value 0
 	Set-ItemProperty -Path $LANP2P2 -Name DODownloadMode -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "P2P and LAN updates have been turned off."
 }
 
 # Enable LAN-P2P update bits delivery
@@ -480,7 +546,7 @@ Function EnableLANP2P {
 	$LANP2P3 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config"
 	Set-ItemProperty -Path $LANP2P3 -Name DownloadMode -Type DWord -Value 3
 	Set-ItemProperty -Path $LANP2P3 -Name DODownloadMode -Type DWord -Value 3
-	Write-Host "Done."
+	Write-Host "LAN and P2P updates have been turned on."
 }
 
 # Disable Autoplay
@@ -488,14 +554,14 @@ Function DisableAutoplay {
 	Write-Host " "
 	Write-Host "Turning off AutoPlay..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "AutoPlay has been turned off."
 }
 
 # Enable Autoplay
 Function EnableAutoplay {
 	Write-Host "Turning on Autoplay..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" -Name "DisableAutoplay" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "AutoPlay has been turned on."
 }
 
 # Disable Autorun for all drives
@@ -507,14 +573,14 @@ Function DisableAutorun {
 		New-Item -Path $Autorun | Out-Null
 		}
 	Set-ItemProperty -Path $Autorun -Name "NoDriveTypeAutoRun" -Type DWord -Value 255
-	Write-Host "Done."
+	Write-Host "Autorun has been turned off for all drives."
 }
 
 # Enable Autorun for removable drives
 Function EnableAutorun {
 	Write-Host "Turning on Autorun for all drives..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoDriveTypeAutoRun" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "Autorun has been turned on."
 }
 
 # Disable scheduled defragmentation task
@@ -528,17 +594,18 @@ Function DisableDefragmentation {
 	if ($decision -eq 0) {
 		Write-Host "Turning off scheduled defragmentation..."
 		Disable-ScheduledTask -TaskName "Microsoft\Windows\Defrag\ScheduledDefrag" | Out-Null
-		Write-Host "Done."
+		Write-Host "Scheduled defragmentation has been turned off."
 		}
-	else {}
+	else {
+	"Automatic disk defragmentation was left as it is."
+		}
 }
 
 # Enable scheduled defragmentation task
 Function EnableDefragmentation {
-	Write-Host " "
 	Write-Host "Turning on scheduled defragmentation..."
 	Enable-ScheduledTask -TaskName "Microsoft\Windows\Defrag\ScheduledDefrag" | Out-Null
-	Write-Host "Done."
+	Write-Host "Scheduled defragmentation has been turned on.."
 }
 
 # Set BIOS time to UTC
@@ -546,20 +613,19 @@ Function SetBIOSTimeUTC {
 	Write-Host " "
 	Write-Host "Setting BIOS time to UTC..."
 	Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" -Name "RealTimeIsUniversal" -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "BIOS time has been set to UTC."
 }
 
 # Set BIOS time to local time
 Function SetBIOSTimeLocal {
 	Write-Host "Setting BIOS time to Local time..."
 	Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" -Name "RealTimeIsUniversal" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "BIOS time has been set to Local time."
 }
 
 # Disable unnecessary services 
 Function DisableServices {
-	Write-Host " "
-	Write-Host "Turning off unnecessary services..."
+	Write-Host "Disabling unnecessary services..."
 	Set-Service RetailDemo -StartupType Disabled -ErrorAction SilentlyContinue
 	Set-Service "diagnosticshub.standardcollector.service" -StartupType Disabled -ErrorAction SilentlyContinue
 	Set-Service MapsBroker  -StartupType Disabled -ErrorAction SilentlyContinue
@@ -567,8 +633,9 @@ Function DisableServices {
 	Set-Service RemoteAccess -StartupType Disabled -ErrorAction SilentlyContinue 
 	Set-Service RemoteRegistry -StartupType Disabled -ErrorAction SilentlyContinue 
 	Set-Service SharedAccess -StartupType Disabled -ErrorAction SilentlyContinue 
+	Set-Service StorSvc -StartupType Disabled -ErrorAction SilentlyContinue 
 	Set-Service TrkWks -StartupType Disabled -ErrorAction SilentlyContinue 
-	Write-Host "Done."
+	Write-Host "Unnecessary services have been disabled."
 }
 
 # Enable unnecessary services
@@ -580,6 +647,7 @@ Function EnableServices {
 	Set-Service RemoteAccess -StartupType Automatic -ErrorAction SilentlyContinue 
 	Set-Service RemoteRegistry -StartupType Automatic -ErrorAction SilentlyContinue 
 	Set-Service SharedAccess -StartupType Automatic -ErrorAction SilentlyContinue 
+	Set-Service StorSvc -StartupType Automatic -ErrorAction SilentlyContinue 
 	Set-Service TrkWks -StartupType Automatic -ErrorAction SilentlyContinue 
 }
 
@@ -599,52 +667,29 @@ Function PrintExplorerChanges {
 Function ShowVerboseStatus {
 	Write-Host "Turning on Verbose Status..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "VerboseStatus" -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "Verbose Status has been turned on."
 }
 
 # Hide verbose status 
 Function HideVerboseStatus {
 	Write-Host "Turning off Verbose Status..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "VerboseStatus" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Verbose Status has been turned off."
 }
-
-# Disable lock screen blur 
-Function TransparentLockScreen {
-	Write-Host " "
-	$question = 'Do you want to turn off background blur in lock screen?'
-	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
-	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
-	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
-	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
-	if ($decision -eq 0) {
-	Write-Host "Turning off background blur in lock screen..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DisableAcrylicBackgroundOnLogon" -Type DWord -Value 1
-	Write-Host "Done."
-	}
-	else {}
-}
-
-Function BlurLockScreen {
-	Write-Host "Turning on background blur in lock screen..."
-	Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "DisableAcrylicBackgroundOnLogon" -Type DWord -Value 0
-	Write-Host "Done."
-}
-
 
 # Enable use print screen key to open screen snipping
 Function EnablePrtScrToSnip {
 	Write-Host " "
 	Write-Host "Directing Print screen key to launch screen snipping..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Keyboard" -Name "PrintScreenKeyForSnippingEnabled" -Type DWord -Value 1
-	Write-Host "Done."
-}
+	Write-Host "Print screen key has been directed to launch Snip window."
+	}
 	
 # Disable use print screen key to open screen snipping
 Function DisablePrtScrSnip {
 	Write-Host "Revoking Print screen key's ability to launch screen snip..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Keyboard" -Name "PrintScreenKeyForSnippingEnabled" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Print screen key will now no longer launch snip window."
 }
 
 # Disable Sticky keys prompt
@@ -652,14 +697,14 @@ Function DisableStickyKeys {
 	Write-Host " "
 	Write-Host "Turning off sticky keys prompt..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type String -Value "506"
-	Write-Host "Done."
+	Write-Host "Sticky keys prompt has been turned off."
 }
 
 # Enable Sticky keys prompt
 Function EnableStickyKeys {
 	Write-Host "Turning on sticky keys prompt..."
 	Set-ItemProperty -Path "HKCU:\Control Panel\Accessibility\StickyKeys" -Name "Flags" -Type String -Value "510"
-	Write-Host "Done."
+	Write-Host "Sticky keys prompt has been turned on."
 }
 
 # Change default Explorer view to This PC
@@ -667,14 +712,14 @@ Function SetExplorerThisPC {
 	Write-Host " "
 	Write-Host "Changing default File Explorer view to This PC..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "Changed default File Explorer view to This PC."
 }
 
 # Change default Explorer view to Quick Access
 Function SetExplorerQuickAccess {
 	Write-Host "Changing default File Explorer view back to Quick Access..."
 	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "LaunchTo" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "Changed default File Explorer view to Quick Access."
 }
 
 # Hide 3D Objects icon from This PC - The icon remains in personal folders and open/save dialogs
@@ -682,7 +727,7 @@ Function Hide3DObjectsInThisPC {
 	Write-Host " "
 	Write-Host "Hiding 3D Objects icon from This PC..."
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}" -Recurse -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "3D Objects has been hidden from This PC."
 }
 
 # Restore 3D Objects icon in This PC
@@ -692,7 +737,7 @@ Function Restore3DObjectsInThisPC {
 	If (!(Test-Path $Restore3DObjects1)) {
 		New-Item -Path $Restore3DObjects1 | Out-Null
 		}
-		Write-Host "Done."
+	Write-Host "3D objects icon has been restored in This PC."
 }
 
 # Hide 3D Objects icon from Explorer namespace - Hides the icon also from personal folders and open/save dialogs
@@ -709,7 +754,7 @@ Function Hide3DObjectsInExplorer {
 		New-Item -Path $Hide3DObjects2 -Force | Out-Null
 		}
 	Set-ItemProperty -Path $Hide3DObjects2 -Name "ThisPCPolicy" -Type String -Value "Hide"
-	Write-Host "Done."
+	Write-Host "3D Objects has been hidden from Explorer."
 }
 
 # Restore 3D Objects icon in Explorer namespace
@@ -719,7 +764,7 @@ Function Restore3DObjectsInExplorer {
 	$Restore3DObjects3 = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{31C0DD25-9439-4F12-BF41-7FF4EDA38722}\PropertyBag"
 	Remove-ItemProperty -Path $Restore3DObjects2 -Name "ThisPCPolicy" -ErrorAction SilentlyContinue
 	Remove-ItemProperty -Path $Restore3DObjects3 -Name "ThisPCPolicy" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "3D Objects has been restored to Explorer namespace."
 }
 
 # Hide Search bar from taskbar
@@ -727,7 +772,7 @@ Function HideSearchBar {
 	Write-Host " "
 	Write-Host "Hiding search bar from taskbar..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Searchbar has been hidden from taskbar."
 }
 
 # Restore Search bar to taskbar
@@ -735,7 +780,7 @@ Function RestoreSearchBar {
 	Write-Host " "
 	Write-Host "Restoring search bar from taskbar..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 2
-	Write-Host "Done."
+	Write-Host "Searchbar has been restored to taskbar."
 }
 
 # Hide Task View button
@@ -743,14 +788,14 @@ Function HideTaskView {
 	Write-Host " "
 	Write-Host "Hiding Task View button from taskbar..."
 	Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Task View button has been hidden from taskbar."
 }
 
 # Restore Task View button
 Function RestoreTaskView {
 	Write-Host "Restoring Task View button..."
 	Remove-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "Task view icon has been restored to taskbar."
 }
 
 # Hide Cortana icon from taskbar
@@ -758,35 +803,14 @@ Function HideCortana {
 	Write-Host " "
 	Write-Host "Hiding Cortana icon from taskbar..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowCortanaButton" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Cortana button has been hidden from taskbar."
 }
 
 # Restore Cortana button in taskbar
 Function RestoreCortana {
-	Write-Host "Showing Cortana icon on taskbar..."
+	Write-Host "Show Cortana icon on taskbar..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowCortanaButton" -Type DWord -Value 1
-	Write-Host "Done."
-}
-
-# Hide Meet Now icon from tray
-Function HideMeetNow {
-	Write-Host " "
-	Write-Host "Hiding Meet now icon from tray..."
-	$Meet1 = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-	$Meet2 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-	Set-ItemProperty -Path $Meet1 -Name "HideSCAMeetNow" -Type DWord -Value 1 -ErrorAction SilentlyContinue
-	Set-ItemProperty -Path $Meet2 -Name "HideSCAMeetNow" -Type DWord -Value 1
-	Write-Host "Done."
-}
-
-# Restore Meet Now icon on tray
-Function RestoreMeetNow {
-	Write-Host "Restoring Meet now icon in tray..."
-	$Meet1 = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-	$Meet2 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"
-	Set-ItemProperty -Path $Meet1 -Name "HideSCAMeetNow" -Type DWord -Value 0
-	Set-ItemProperty -Path $Meet2 -Name "HideSCAMeetNow" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Cortana button has been restored to taskbar."
 }
 
 # Show Seconds in taskbar clock
@@ -800,16 +824,15 @@ Function ShowSecondsInTaskbar {
 	if ($decision -eq 0) {
 	Write-Host "Telling taskbar clock to display seconds..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
-	Write-Host "Done."
-	}
-	else {}
+	Write-Host "Taskbar clock will now display seconds."
+		}
 }
 
 # Hide Seconds in taskbar clock
 Function HideSecondsFromTaskbar {
 	Write-Host "Trying to hide seconds from Taskbar clock..."
 	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Taskbar clock will no longer display seconds."
 }
 
 
@@ -827,18 +850,33 @@ Function PrintFeaturesChanges {
 }
 
 Function EnableWSL {
-	$question = 'Do you want to install WSL?'
+	$question = 'Do you want to turn on Windows Subsystem for Linux?'
 	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
 	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
 		if ($decision -eq 0) {
-		Write-Host "Installing WSL..."
+		Write-Host "Turning on Windows Subsystem for Linux..."
 		dism.exe /Online /Enable-Feature /FeatureName:Microsoft-Windows-Subsystem-Linux /all /NoRestart /Quiet
 		dism.exe /Online /Enable-Feature /FeatureName:VirtualMachinePlatform /All /NoRestart /Quiet
 		dism.exe /Online /Enable-Feature /FeatureName:Microsoft-Hyper-V /All /NoRestart	/Quiet
-		Write-Host "Done."
+		Write-Host "Windows Subsystem for Linux has been turned on." 
 		}
+}
+
+# Uninstall Internet Explorer
+Function UninstallInternetExplorer {
+	Write-Host " "
+	Write-Host "Uninstalling Internet Explorer..."
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -like "Internet-Explorer-Optional*" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Browser.InternetExplorer*" } | Remove-WindowsCapability -Online | Out-Null
+	Write-Host "Internet Explorer has been uninstalled."
+}
+
+# Install Internet Explorer
+Function InstallInternetExplorer {
+	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -like "Internet-Explorer-Optional*" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Browser.InternetExplorer*" } | Add-WindowsCapability -Online | Out-Null
 }
 
 # Uninstall Work Folders Client - Not applicable to Server
@@ -846,7 +884,7 @@ Function UninstallWorkFolders {
 	Write-Host " "
 	Write-Host "Uninstalling Work Folders Client..."
 	Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "WorkFolders-Client" } | Disable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
-	Write-Host "Done."
+	Write-Host "Work Folders has been uninstalled."
 }
 
 # Install Work Folders Client
@@ -859,7 +897,7 @@ Function UninstallHelloFace {
 	Write-Host " "
 	Write-Host "Uninstalling Windows Hello Face..."
 	Get-WindowsCapability -Online | Where-Object { $_.Name -like "Hello.Face*" } | Remove-WindowsCapability -Online | Out-Null
-	Write-Host "Done."
+	Write-Host "Hello Face has been uninstalled."
 }
 
 # Install Windows Hello Face
@@ -872,7 +910,7 @@ Function UninstallMathRecognizer {
 	Write-Host " "
 	Write-Host "Uninstalling Math Recognizer..."
 	Get-WindowsCapability -Online | Where-Object { $_.Name -like "MathRecognizer*" } | Remove-WindowsCapability -Online | Out-Null
-	Write-Host "Done."
+	Write-Host "Math Recognizer has been uninstalled."
 }
 
 # Install Math Recognizer - Not applicable to Server
@@ -883,16 +921,15 @@ Function InstallMathRecognizer {
 
 # Install dotNET 3.5
 Function InstalldotNET3 {
-	Write-Host " "
-	$question = 'Do you want to install dotNET 3.5?'
+	$question = 'Do you want to turn on dotNET 3.5?'
 	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
 	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
 		if ($decision -eq 0) {
-		Write-Host "Installing dotNET 3.5..."
+		Write-Host "Turning on dotNET 3.5"
 		Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq "NetFx3" } | Enable-WindowsOptionalFeature -Online -NoRestart -WarningAction SilentlyContinue | Out-Null
-		Write-Host "Done."
+		Write-Host "dotNET 3.5 has been turned on." 
 		}
 }
 
@@ -917,14 +954,14 @@ Function AutoLoginPostUpdate {
 	Write-Host " "
 	Write-Host "Telling this PC to automatically login after Windows Update..."
 	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "ARSOUserConsent" -Type DWord -Value 1
-	Write-Host "Done."
+	Write-Host "This PC is now set to automatically login after a Windows Update restart."
 } 
 
 Function StayOnLockscreenPostUpdate {
 	Write-Host " "
 	Write-Host "Telling this PC to not automatically login post a Windows Update reset."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "ARSOUserConsent"
-	Write-Host "Done."
+	Write-Host "This PC will now no longer automatically login to the most recent user account post a Windows Update restart."
 }
 
 # Enable Meltdown (CVE-2017-5754) compatibility flag - Required for January 2018 and all subsequent Windows updates
@@ -939,7 +976,7 @@ Function EnableMeltdownCompatFlag {
 		New-Item -Path $MeltdownCompat | Out-Null
 	}
 	Set-ItemProperty -Path $MeltdownCompat -Name "cadca5fe-87d3-4b96-b7fb-a231484277cc" -Type DWord -Value 0
-	Write-Host "Done."
+	Write-Host "Meltdown (CVE-2017-5754) compatibility flag has been turned on."
 }
 
 # Disable Meltdown (CVE-2017-5754) compatibility flag
@@ -947,8 +984,33 @@ Function DisableMeltdownCompatFlag {
 	Write-Host " "
 	Write-Host "Turning off Meltdown (CVE-2017-5754) compatibility flag..."
 	Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat" -Name "cadca5fe-87d3-4b96-b7fb-a231484277cc" -ErrorAction SilentlyContinue
-	Write-Host "Done."
+	Write-Host "Meltdown (CVE-2017-5754) compatibility flag has been turned off."
 }
+
+# Disable SMB1 and SMB2 
+Function DisableSMB {
+	Write-Host " "
+	Write-Host "Turning off Server Message Block v1 and v2..."
+	$SMB1 = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+	$SMB2 = "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"
+	Set-ItemProperty -Path $SMB1 -Name "SMB1" -Type DWord -Value 0
+	Set-ItemProperty -Path $SMB1 -Name "SMB2" -Type DWord -Value 0
+	Set-ItemProperty -Path $SMB2 -Name "SMBDeviceEnabled" -Type DWord -Value 0
+	Write-Host "Server Message Block v1 and v2 have been turned off."
+}
+
+# Enable SMB1 and SMB2 
+Function EnableSMB {
+	Write-Host " "
+	Write-Host "Turning on Server Message Block v1 and v2..."
+	$SMB1 = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
+	$SMB2 = "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"
+	Set-ItemProperty -Path $SMB1 -Name "SMB1" -Type DWord -Value 1
+	Set-ItemProperty -Path $SMB1 -Name "SMB2" -Type DWord -Value 1
+	Set-ItemProperty -Path $SMB2 -Name "SMBDeviceEnabled" -Type DWord -Value 1
+	Write-Host "Server Message Block v1 and v2 have been turned on."
+}
+
 
 
 ######### System changes #########
@@ -966,8 +1028,6 @@ Function PrintSystemChanges {
 Function EnableUltimatePerf {
 	Write-Host "Turning on ultimate performance power plan..."
 	powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61
-	Write-Host " "
-	Write-Host "Done."
 }
 
 
@@ -986,10 +1046,8 @@ Function PrintAppsChanges {
 
 # Debloat apps
 Function DebloatApps {
-$ErrorActionPreference = 'SilentlyContinue'
-
 	# Prebuilt apps
-	Write-Host "Uninstalling unnecessary apps..."
+	Write-Host "Beginning uninstallation of unnecesary apps..."
 	$Bloatware = @(
 	 "Microsoft.549981C3F5F10"
 	 "Microsoft.BingNews"
@@ -998,11 +1056,10 @@ $ErrorActionPreference = 'SilentlyContinue'
 	 "Microsoft.Getstarted" 
 	 "Microsoft.Messaging"
 	 "Microsoft.Microsoft3DViewer" 
-	 "Microsoft.MicrosoftStickyNotes"  
+	 "Microsoft.MicsoftStickyNotes"  
 	 "Microsoft.MSPaint"
 	 "Microsoft.MicrosoftOfficeHub"
 	 "Microsoft.Office.OneNote"
-	 "Microsoft.MixedReality.Portal"
 	 "Microsoft.MicrosoftSolitaireCollection" 
 	 "Microsoft.NetworkSpeedTest" 
 	 "Microsoft.News" 
@@ -1010,59 +1067,83 @@ $ErrorActionPreference = 'SilentlyContinue'
 	 "Microsoft.OneConnect"
 	 "Microsoft.People" 
 	 "Microsoft.Print3D" 
-	 "Microsoft.SkypeApp"
 	 "Microsoft.StorePurchaseApp" 
 	 "Microsoft.WindowsAlarms"
-	 "Microsoft.WindowsCamera"
 	 "Microsoft.WindowsCommunicationsApps" 
 	 "Microsoft.WindowsFeedbackHub" 
 	 "Microsoft.WindowsMaps" 
+	 "Microsoft.Windows.Photos"
 	 "Microsoft.WindowsSoundRecorder" 
 	 "Microsoft.XboxApp"
 	 "Microsoft.XboxGamingOverlay"
-	 "Microsoft.YourPhone"
-	 "Microsoft.ZuneMusic"
 	 "Microsoft.ZuneVideo"
-
-	#Sponsored Windows 10 AppX Apps
-    #Add sponsored/featured apps to remove in the "*AppName*" format
-    "*EclipseManager*"
-    "*ActiproSoftwareLLC*"
-    "*AdobeSystemsIncorporated.AdobePhotoshopExpress*"
-    "*Duolingo-LearnLanguagesforFree*"
-    "*PandoraMediaInc*"
-    "*CandyCrush*"
-    "*BubbleWitch3Saga*"
-    "*Wunderlist*"
-    "*Flipboard*"
-    "*Twitter*"
-    "*Facebook*"
-    "*Spotify*"
-    "*Minecraft*"
-    "*Royal Revolt*"
-    "*Sway*"
-    "*Speed Test*"
-	"*Dolby*"
 	)
-
 	foreach ($Bloat in $Bloatware) {
 		Get-AppxPackage -Name $Bloat| Remove-AppxPackage 
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online | Out-Null
-	}
-	Remove-Item "C:\Users\$env:UserName\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Excel.lnk"
-    Remove-Item "C:\Users\$env:UserName\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Outlook.lnk"
-    Remove-Item "C:\Users\$env:UserName\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\PowerPoint.lnk"
-    Remove-Item "C:\Users\$env:UserName\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Word.lnk"
-	Write-Host "Done."
+        Write-Host "Uninstalling $Bloat."}
+	Write-Host "Unnecessary apps have been uninstalled from this PC."
+}
+
+Function RemoveCamera {
+		Write-Host " "
+		$question = 'Do you want to remove Camera app?'
+		$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+		$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+		if ($decision -eq 0) {	
+			Removing Camera app...
+			Get-AppxPackage "Microsoft.WindowsCamera" | Remove-AppxPackage
+			Write-Host "Camera app has been removed."
+			}
+}
+
+Function RemoveGrooveMusic {
+		Write-Host " "
+		$question = 'Do you want to remove Groove Music app?'
+		$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+		$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+		if ($decision -eq 0) {	
+			Removing Groove Music...
+			Get-AppxPackage "Microsoft.ZuneMusic" | Remove-AppxPackage
+			Write-Host "Groove Music has been removed."
+			}
+}
+	
+Function RemoveSkype {
+		Write-Host " "
+		$question = 'Do you want to remove Skype app?'
+		$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+		$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+		if ($decision -eq 0) {	
+			Removing Skype...
+			Get-AppxPackage "Microsoft.SkypeApp" | Remove-AppxPackage
+			Write-Host "Skype has been removed."
+			}
+}
+
+Function RemoveYourPhone {
+		Write-Host " "
+		$question = 'Do you want to remove Your Phone?'
+		$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+		$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+		$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+		if ($decision -eq 0) {	
+			Removing Your Phone...
+			Get-AppxPackage "Microsoft.YourPhone" | Remove-AppxPackage
+			Write-Host "Your Phone has been removed."
+			}
 }
 
 Function CleanupRegistry {
-$ErrorActionPreference = 'SilentlyContinue'
-	Write-Host " "
-	Write-Host "Cleaning up registry..."
-    	$Keys = @(
-		
-		New-PSDrive HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+    $Keys = @(
+            
         #Remove Background Tasks
         "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
         "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
@@ -1096,60 +1177,70 @@ $ErrorActionPreference = 'SilentlyContinue'
         
     #This writes the output of each key it is removing and also removes the keys listed above.
     ForEach ($Key in $Keys) {
-		Remove-Item $Key -Recurse
-	}
-	Write-Host "Done."
+        Write-Host "Removing $Key from registry"
+        Remove-Item $Key -Recurse
+    }
 }
 
-# Install Chocolatey
-Function InstallChoco {
+# Install new DesktopAppInstaller to get winget compatibility
+Function InstallWinget {
 	Write-Host " "
-    Write-Host "Installing Chocolatey package manager..."
-	Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-	choco install chocolatey-core.extension -y
-	Write-Host "Done."
+	Write-Host "Downloading Windows Package Manager..."
+	Invoke-WebRequest https://github.com/microsoft/winget-cli/releases/download/v0.2.2941/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.appxbundle -O C:\WindowsPackageManager.appx
+	Add-AppxPackage "WindowsPackageManager.appx"
+	Remove-Item WindowsPackageManager.appx
+	Write-Host "Windows Package Installer has been installed."
 }
 
 # Install 7zip
 Function Install7zip {
 	Write-Host " "
 	Write-Host "Installing 7-zip..."
-	choco install 7zip
+	winget install --id=7zip.7zip
 }
 
-# Install apps from ChocInstall file (the ChocInstall.txt file must be on the same directory where CleanWin is)
-Function ChocInstall {
+# Install apps from winstall file (the winstall.txt file must be on the same directory where CleanWin is)
+Function Winstall {
 	Write-Host " "
-	$question = 'Do you want to install apps using the ChocInstall.txt file?'
+	$question = 'Do you want to install apps using the winstall.txt file?'
 	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
 	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
 	if ($decision -eq 0) {	
-		Get-Content 'ChocInstall.txt' | Foreach-Object {
+		Get-Content 'winstall.txt' | Foreach-Object {
 		$App = $_.Split('=')
-		choco install $App -Y
+		winget install $App
 		}
 	}
 }
 
 Function EnterpriseUpgrade {
-	Write-Host " "
+	Write-Host" "
 	$question = 'Do you want to upgrade to Windows 10 Enterprise? (your data will remain unaffected)'
 	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
 	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
 	if ($decision -eq 0) {	
-		Write-Host "haha Windows 10 Enterprise upgrade go brrr..."
+		Write-Host "haha Windows 10 Enterprise upgrade goes brrr..."
 		Start https://bit.ly/2PR9PRp
 		}
 }
 
 ######### Tasks after successful run #########
 
+# Update status: Performing tasks after successful execution
+Function PrintEndTasksBegin{
+	Write-Host " "
+	Write-Host "--------------"
+	Write-Host "Performing tasks after successful execution of scripts..."
+	Write-Host "--------------"
+	Write-Host " "
+}
+		
 # Update status: Script execution successful
-Function RestartPC {
+Function PrintEndEndTasks {
 	$question = 'CleanWin execution successful. Do you want to restart your PC now?'
 	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
 	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
