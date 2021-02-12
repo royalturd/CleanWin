@@ -97,7 +97,7 @@ $tasks = @(
 ### App changes ###
 	"PrintAppsChanges",
 	"DebloatApps", "RemoveCamera", "RemoveGrooveMusic", "RemoveSkype", "RemoveYourPhone", "CleanupRegistry",
-	"ConfirmInstall", "InstallWinget", "Install7zip", "Winstall", 
+	"ConfirmInstall", "InstallWinget", "Install7zip", "Winstall", "MicSwitch",
 	"LessSleep",
 	"ChangesDone",
 	"ClearShell",
@@ -1212,6 +1212,22 @@ Function Install7zip {
 	Write-Host " "
 	Write-Host "Installing 7-zip..."
 	winget install --id=7zip.7zip
+}
+
+# MicSwitch
+
+Function MicSwitch {
+	Write-Host " "
+	$question = 'Do you want to install MicSwitch?'
+	$choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+	$choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+	$decision = $Host.UI.PromptForChoice($message, $question, $choices, 1)
+	if ($decision -eq 0) {
+		Invoke-WebRequest https://github.com/iXab3r/MicSwitch/releases/download/1.0.140/MicSwitchSetup.1.0.140.exe -O C:\MicSwitchSetup.exe
+		Start-Process -Wait -FilePath " C:\MicSwitchSetup.exe" -ArgumentList '/S','/v','/qn' -passthru
+		}
+	}
 }
 
 # Install apps from winstall file (the winstall.txt file must be on the same directory where CleanWin is)

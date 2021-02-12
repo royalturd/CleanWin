@@ -48,12 +48,21 @@ Uninstall all bloat apps:
   <br>Xbox
   <br>Xbox Game bar
   <br>Your Phone
-  <br><br>Install features:
-  <br>Install WSL
-  <br><br>Uninstall bloat features:
-  <br>Uninstall Math Recognizer 
-  <br>Uninstall Windows Hello Face
-  <br>Uninstall Work Folders
+  <br><br>List of apps installed:
+  <br>Windows Package Manager
+  <br>7-zip<br>Microsoft PowerToys (optional)<br>Revo Uninstaller (optional)<br>VLC Media Player (optional)<br>MicSwitch (optional) 
+</details>
+
+<details>
+ <summary>Optional features</summary>
+  Turn on Windows Subsystem for Linux (optional)
+  <br>Turn on Hyper-V (optional)
+  <br>Turn on Virtual Machine (optional)
+  <br>Turn on dotNET 3.5 (optional)
+  <br>Turn off Internet Explorer
+  <br>Turn off Math Recognizer 
+  <br>Turn off Windows Hello Face
+  <br>Turn off Work Folders
 </details>
 
 <details>
